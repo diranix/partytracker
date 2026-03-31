@@ -1,6 +1,6 @@
 .env
 node_modules/
-___pycache__/
+__pycache__/
 *.pyc
 dist/
 build/
