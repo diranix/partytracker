@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from backend.app.db.database import Base, engine
-from backend.app.models.night import Night
-from backend.app.routers import nights
+from app.db.database import Base, engine
+from app.models.night import Night
+from app.routers import nights
 
 app = FastAPI(title="Party Tracker API")
 
