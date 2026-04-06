@@ -1,0 +1,55 @@
+services:
+
+  frontend:
+    build: ./frontend
+    container_name: partytracker_frontend
+    restart: always
+    networks:
+      - partytracker_net
+
+  backend:
+    build: ./backend
+    container_name: partytracker_backend
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - partytracker_net
+
+  db:
+    image: postgres:16-alpine
+    container_name: partytracker_db
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - partytracker_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: partytracker_nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - partytracker_net
+
+volumes:
+  postgres_data:
+
+networks:
+  partytracker_net:
+    driver: bridge
