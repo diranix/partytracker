@@ -3,9 +3,9 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from backend.app.db.database import get_db
-from backend.app.models.night import Night
-from backend.app.schemas.night import NightCreate, NightResponse
+from app.db.database import get_db
+from app.models.night import Night
+from app.schemas.night import NightCreate, NightResponse
 
 router = APIRouter(prefix="/nights", tags=["Nights"])
 
