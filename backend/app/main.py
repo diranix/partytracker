@@ -3,7 +3,7 @@ from app.db.database import Base, engine
 from app.models.night import Night
 from app.routers import nights
 
-app = FastAPI(title="Party Tracker API, root_path="/api"")
+app = FastAPI(title="Party Tracker API", root_path="/api"")
 
 
 @app.on_event("startup")
