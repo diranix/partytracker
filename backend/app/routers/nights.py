@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -16,6 +16,14 @@ def get_nights(db: Session = Depends(get_db)):
     return nights
 
 
+@router.get("/{night_id}", response_model=NightResponse)
+def get_night(night_id: int, db: Session = Depends(get_db)):
+    night = db.query(Night).filter(Night.id == night_id).first()
+    if night is None:
+        raise HTTPException(status_code=404, detail="Night not found")
+    return night
+
+
 @router.post("/", response_model=NightResponse)
 def create_night(night: NightCreate, db: Session = Depends(get_db)):
     db_night = Night(
@@ -26,4 +34,30 @@ def create_night(night: NightCreate, db: Session = Depends(get_db)):
     db.add(db_night)
     db.commit()
     db.refresh(db_night)
-    return db_night 
+    return db_night
+
+
+@router.put("/{night_id}", response_model=NightResponse)
+def update_night(night_id: int, updated_night: NightCreate, db: Session = Depends(get_db)):
+    night = db.query(Night).filter(Night.id == night_id).first()
+    if night is None:
+        raise HTTPException(status_code=404, detail="Night not found")
+
+    night.title = updated_night.title
+    night.location = updated_night.location
+    night.mood = updated_night.mood
+
+    db.commit()
+    db.refresh(night)
+    return night
+
+
+@router.delete("/{night_id}")
+def delete_night(night_id: int, db: Session = Depends(get_db)):
+    night = db.query(Night).filter(Night.id == night_id).first()
+    if night is None:
+        raise HTTPException(status_code=404, detail="Night not found")
+
+    db.delete(night)
+    db.commit()
+    return {"message": "Night deleted"}
