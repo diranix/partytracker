@@ -29,7 +29,9 @@ def create_night(night: NightCreate, db: Session = Depends(get_db)):
     db_night = Night(
         title=night.title,
         location=night.location,
-        mood=night.mood
+        mood=night.mood,
+        drinks_count=night.drinks_count,
+        rating=night.rating,
     )
     db.add(db_night)
     db.commit()
@@ -46,6 +48,8 @@ def update_night(night_id: int, updated_night: NightCreate, db: Session = Depend
     night.title = updated_night.title
     night.location = updated_night.location
     night.mood = updated_night.mood
+    night.drinks_count = updated_night.drinks_count
+    night.rating = updated_night.rating
 
     db.commit()
     db.refresh(night)

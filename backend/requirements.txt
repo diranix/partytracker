@@ -3,5 +3,5 @@ uvicorn[standard]
 sqlalchemy
 psycopg2-binary
 alembic
-pydantic
+pydantic[email]
 python-dotenv
