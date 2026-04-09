@@ -7,6 +7,7 @@ export default defineConfig({
     allowedHosts: ['frontend', 'localhost'],
     host: '0.0.0.0',
     port: 3000,
+    allowedHosts: ['frontend', 'localhost', 'partytracker.fun'],
     proxy: {
       '/api': {
         target: 'http://backend:8000',
