@@ -3,6 +3,7 @@ from app.db.database import Base, engine
 from app.models.night import Night  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.routers import auth, nights, stats, users
+from app.routers import nights, users
 
 app = FastAPI(title="Party Tracker API", root_path="/api")
 
