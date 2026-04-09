@@ -12,6 +12,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+         python-version: '3.11'
+
+      - name: Check no secrets in repo
+        run: |
+          if [ -f .env ]; then
+            echo ".env file found in repository!"
+            exit 1
+          fi
+          echo "No .env file found - OK"
+
+      - name: Install security tools
+        run: |
+          pip install bandit safety flake8
+
+      - name: Lint (flake8)
+        run: |
+          flake8 backend/app --max-line-length=120 --ignore=E501
+
+      - name: SAST (bandit)
+        run: |
+          bandit -r backend/app -ll
+
+      - name: SCA (safety)
+        run: |
+          safety check -r backend/requirements.txt
+
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -23,3 +52,8 @@ jobs:
             cd /home/diranix/partytracker
             git pull origin dev
             docker compose up -d --build
+
+      - name: Smoke test
+        run: |
+          sleep 10
+          curl -f https://partytracker.fun/api/ || exit 1
