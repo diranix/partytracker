@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from backend.app.db.database import Base
+from app.db.database import Base
 
 
 class Night(Base):
@@ -9,3 +9,5 @@ class Night(Base):
     title = Column(String, nullable=False)
     location = Column(String, nullable=False)
     mood = Column(String, nullable=False)
+    drinks_count = Column(Integer, nullable=False, default=0)
+    rating = Column(Integer, nullable=False, default=5)
