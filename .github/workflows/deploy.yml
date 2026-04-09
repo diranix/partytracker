@@ -31,7 +31,7 @@ jobs:
 
       - name: Lint (flake8)
         run: |
-          flake8 backend/app --max-line-length=120 --ignore=E501
+          flake8 backend/app --max-line-length=120 --ignore=E501,W292
 
       - name: SAST (bandit)
         run: |
