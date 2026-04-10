@@ -1,16 +1,43 @@
 import { useState } from 'react'
-import { currentUser } from '../data/mockData'
 
 export default function AuthPage({ onAuth }) {
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Mock auth — swap for real API calls later
-    onAuth({ ...currentUser, username: username || currentUser.username })
+    setError('')
+    setLoading(true)
+
+    try {
+      if (mode === 'register') {
+        const res = await fetch('/api/users/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.detail || 'Registration failed')
+        onAuth(data)
+      } else {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.detail || 'Login failed')
+        onAuth(data)
+      }
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -80,8 +107,24 @@ export default function AuthPage({ onAuth }) {
               />
             </div>
 
-            <button type="submit" className="form-submit">
-              {mode === 'login' ? 'Sign In' : 'Create Account'}
+            {error && (
+              <div style={{
+                color: '#f87171',
+                fontSize: '13px',
+                marginBottom: '12px',
+                padding: '10px 12px',
+                background: 'rgba(239,68,68,0.08)',
+                borderRadius: '8px',
+                border: '1px solid rgba(239,68,68,0.2)',
+              }}>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" className="form-submit" disabled={loading}>
+              {loading
+                ? 'Please wait...'
+                : mode === 'login' ? 'Sign In' : 'Create Account'}
             </button>
           </form>
 
@@ -89,12 +132,12 @@ export default function AuthPage({ onAuth }) {
             {mode === 'login' ? (
               <>
                 Don&apos;t have an account?
-                <button onClick={() => setMode('register')}>Sign up</button>
+                <button onClick={() => { setMode('register'); setError('') }}>Sign up</button>
               </>
             ) : (
               <>
                 Already have an account?
-                <button onClick={() => setMode('login')}>Sign in</button>
+                <button onClick={() => { setMode('login'); setError('') }}>Sign in</button>
               </>
             )}
           </div>
