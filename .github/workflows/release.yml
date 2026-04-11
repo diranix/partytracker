@@ -44,6 +44,9 @@ jobs:
         run: |
           safety check -r backend/requirements.txt
 
+      - name: Validate nginx config
+        run: docker run --rm -v $(pwd)/nginx:/etc/nginx/conf.d nginx:alpine nginx -t
+
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:

@@ -44,6 +44,9 @@ jobs:
         run: |
           safety check -r backend/requirements.txt
 
+      - name: Validate nginx config
+        run: docker run --rm -v $(pwd)/nginx:/etc/nginx/conf.d nginx:alpine nginx -t
+
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -54,6 +57,7 @@ jobs:
           script: |
             cd /home/diranix/partytracker
             git pull origin dev
+            docker compose -f docker-compose.dev.yml up -d
             docker compose up -d --build
             docker compose restart nginx
 
