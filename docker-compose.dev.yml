@@ -18,7 +18,7 @@ services:
         condition: service_healthy
     networks:
       - partytracker_dev_net
-      - partytracker_net
+      - partytracker_partytracker_net
 
   db-dev:
     image: postgres:16-alpine
@@ -42,5 +42,5 @@ volumes:
 networks:
   partytracker_dev_net:
     driver: bridge
-  partytracker_net:
+  partytracker_partytracker_net:
     external: true
