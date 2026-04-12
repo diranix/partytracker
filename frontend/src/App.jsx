@@ -9,7 +9,6 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Restore session from token on page load
   useEffect(() => {
     const token = getToken()
     if (!token) { setLoading(false); return }
