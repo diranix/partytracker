@@ -23,3 +23,4 @@ class Night(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     user = relationship("User", back_populates="nights")
+    likes = relationship("Like", back_populates="night", cascade="all, delete-orphan")

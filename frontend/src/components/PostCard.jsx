@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiFetch } from '../api/client'
 import { moodColors } from '../data/mockData'
 import { HeartIcon, MapPinIcon, StarIcon, WineIcon } from './icons'
 
@@ -15,11 +16,18 @@ function timeAgo(dateStr) {
 
 export default function PostCard({ post }) {
   const [liked, setLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(0)
+  const [likeCount, setLikeCount] = useState(post.like_count ?? 0)
 
-  const handleLike = () => {
-    setLiked(l => !l)
-    setLikeCount(c => liked ? c - 1 : c + 1)
+  const handleLike = async () => {
+    try {
+      const data = await apiFetch(`/nights/${post.id}/like`, { method: 'POST' })
+      setLiked(data.liked)
+      setLikeCount(data.like_count)
+    } catch {
+      // not logged in — just toggle visually
+      setLiked(l => !l)
+      setLikeCount(c => liked ? c - 1 : c + 1)
+    }
   }
 
   const moodClass = moodColors[post.mood] || 'tag-mood'
