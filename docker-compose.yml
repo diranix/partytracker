@@ -58,5 +58,4 @@ volumes:
 networks:
   partytracker_net:
     driver: bridge
-  partytracker_dev_net:
-    external: true
+
