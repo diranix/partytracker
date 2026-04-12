@@ -50,7 +50,6 @@ services:
       - backend
     networks:
       - partytracker_net
-      - partytracker_dev_net
 
 volumes:
   postgres_data:
