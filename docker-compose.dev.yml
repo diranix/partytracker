@@ -2,14 +2,12 @@ services:
 
   frontend-dev:
     build: ./frontend
-    container_name: partytracker_frontend_dev
     restart: always
     networks:
       - partytracker_dev_net
 
   backend-dev:
     build: ./backend
-    container_name: partytracker_backend_dev
     restart: always
     env_file:
       - .env.dev
@@ -21,7 +19,6 @@ services:
 
   db-dev:
     image: postgres:16-alpine
-    container_name: partytracker_db_dev
     restart: always
     env_file:
       - .env.dev
@@ -40,5 +37,6 @@ volumes:
 
 networks:
   partytracker_dev_net:
+    name: partytracker_dev_net
     driver: bridge
 
