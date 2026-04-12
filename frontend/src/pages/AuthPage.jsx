@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { apiFetch, setToken } from '../api/client'
 
 export default function AuthPage({ onAuth }) {
   const [mode, setMode] = useState('login')
@@ -14,25 +15,20 @@ export default function AuthPage({ onAuth }) {
     setLoading(true)
 
     try {
+      let data
       if (mode === 'register') {
-        const res = await fetch('/api/users/', {
+        data = await apiFetch('/users/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, email, password }),
         })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.detail || 'Registration failed')
-        onAuth(data)
       } else {
-        const res = await fetch('/api/auth/login', {
+        data = await apiFetch('/auth/login', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
         })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.detail || 'Login failed')
-        onAuth(data)
       }
+      setToken(data.token)
+      onAuth(data.user)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -42,7 +38,6 @@ export default function AuthPage({ onAuth }) {
 
   return (
     <div className="auth-page">
-      {/* Branding side */}
       <div className="auth-brand">
         <div className="auth-brand-logo">
           <span>Party</span>Tracker
@@ -56,7 +51,6 @@ export default function AuthPage({ onAuth }) {
         </p>
       </div>
 
-      {/* Form side */}
       <div className="auth-form-side">
         <div className="auth-form-box">
           <h2 className="auth-form-title">

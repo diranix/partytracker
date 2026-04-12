@@ -1,16 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { apiFetch } from '../api/client'
+import CreatePostModal from '../components/CreatePostModal'
+import { PlusIcon } from '../components/icons'
 import Navbar from '../components/Navbar'
 import PostCard from '../components/PostCard'
-import CreatePostModal from '../components/CreatePostModal'
-import { mockPosts } from '../data/mockData'
-import { PlusIcon } from '../components/icons'
 
 export default function FeedPage({ currentUser, onLogout }) {
-  const [posts, setPosts] = useState(mockPosts)
+  const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
 
+  useEffect(() => {
+    apiFetch('/nights/')
+      .then(data => setPosts(data))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
   const handleCreatePost = (newPost) => {
-    setPosts([{ ...newPost, user: currentUser }, ...posts])
+    setPosts(prev => [newPost, ...prev])
   }
 
   return (
@@ -30,6 +38,18 @@ export default function FeedPage({ currentUser, onLogout }) {
               New Night
             </button>
           </div>
+
+          {loading && (
+            <div style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '40px 0' }}>
+              Loading...
+            </div>
+          )}
+
+          {!loading && posts.length === 0 && (
+            <div style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '40px 0' }}>
+              No nights yet. Be the first to share one.
+            </div>
+          )}
 
           {posts.map(post => (
             <PostCard key={post.id} post={post} />

@@ -1,14 +1,38 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { apiFetch, getToken, removeToken } from './api/client'
 import AuthPage from './pages/AuthPage'
 import FeedPage from './pages/FeedPage'
 import ProfilePage from './pages/ProfilePage'
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // Restore session from token on page load
+  useEffect(() => {
+    const token = getToken()
+    if (!token) { setLoading(false); return }
+    apiFetch('/users/me')
+      .then(user => setCurrentUser(user))
+      .catch(() => removeToken())
+      .finally(() => setLoading(false))
+  }, [])
 
   const handleAuth = (user) => setCurrentUser(user)
-  const handleLogout = () => setCurrentUser(null)
+
+  const handleLogout = () => {
+    removeToken()
+    setCurrentUser(null)
+  }
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading...</div>
+      </div>
+    )
+  }
 
   return (
     <BrowserRouter>
