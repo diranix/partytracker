@@ -116,9 +116,7 @@ export default function AuthPage({ onAuth }) {
             )}
 
             <button type="submit" className="form-submit" disabled={loading}>
-              {loading
-                ? 'Please wait...'
-                : mode === 'login' ? 'Sign In' : 'Create Account'}
+              {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
             </button>
           </form>
 

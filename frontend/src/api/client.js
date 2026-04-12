@@ -17,10 +17,21 @@ export async function apiFetch(path, options = {}) {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   }
+
   const res = await fetch(`/api${path}`, { ...options, headers })
+
+  // Handle non-JSON responses (e.g. 500 Internal Server Error)
+  const text = await res.text()
+  let data
+  try {
+    data = JSON.parse(text)
+  } catch {
+    throw new Error(text || `Server error: ${res.status}`)
+  }
+
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
     throw new Error(data.detail || `Request failed: ${res.status}`)
   }
-  return res.json()
+
+  return data
 }
