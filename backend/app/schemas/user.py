@@ -19,3 +19,8 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AuthResponse(BaseModel):
+    token: str
+    user: UserResponse
