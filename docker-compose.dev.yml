@@ -3,12 +3,14 @@ services:
   frontend-dev:
     build: ./frontend
     restart: always
+    container_name: partytracker_frontend_dev
     networks:
       - partytracker_dev_net
 
   backend-dev:
     build: ./backend
     restart: always
+    container_name: partytracker_backend_dev
     env_file:
       - .env.dev
     depends_on:
@@ -20,6 +22,7 @@ services:
   db-dev:
     image: postgres:16-alpine
     restart: always
+    container_name: partytracker_db_dev
     env_file:
       - .env.dev
     volumes:
