@@ -50,6 +50,7 @@ services:
       - backend
     networks:
       - partytracker_net
+      - partytracker_dev_net
 
 volumes:
   postgres_data:
@@ -57,3 +58,5 @@ volumes:
 networks:
   partytracker_net:
     driver: bridge
+  partytracker_dev_net:
+    external: true

@@ -1,60 +1,55 @@
-import { useState, useRef } from 'react'
-import { XIcon, CameraIcon } from './icons'
+import { useRef, useState } from 'react'
+import { apiFetch } from '../api/client'
+import { CameraIcon, XIcon } from './icons'
 
 const MOODS = ['Euphoric', 'Chill', 'Happy', 'Intense', 'Wild', 'Tired']
 
 export default function CreatePostModal({ isOpen, onClose, onSubmit }) {
-  const [preview, setPreview] = useState(null)
   const [caption, setCaption] = useState('')
   const [location, setLocation] = useState('')
   const [mood, setMood] = useState('')
   const [drinks, setDrinks] = useState('')
   const [rating, setRating] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const fileRef = useRef()
 
   if (!isOpen) return null
 
-  const handleFile = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    setPreview(URL.createObjectURL(file))
-  }
-
-  const handleDrop = (e) => {
-    e.preventDefault()
-    const file = e.dataTransfer.files[0]
-    if (!file) return
-    setPreview(URL.createObjectURL(file))
-  }
-
-  const handleSubmit = () => {
-    const post = {
-      id: Date.now(),
-      caption,
-      location,
-      mood,
-      amountDrank: parseInt(drinks) || 0,
-      rating: rating || 5,
-      image: preview || `https://picsum.photos/seed/${Date.now()}/600/750`,
-      likes: 0,
-      liked: false,
-      createdAt: new Date().toISOString(),
+  const handleSubmit = async () => {
+    setError('')
+    setLoading(true)
+    try {
+      const post = await apiFetch('/nights/', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: caption,
+          location,
+          mood,
+          drinks_count: parseInt(drinks) || 0,
+          rating: rating || 5,
+        }),
+      })
+      onSubmit(post)
+      handleClose()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-    onSubmit(post)
-    handleClose()
   }
 
   const handleClose = () => {
-    setPreview(null)
     setCaption('')
     setLocation('')
     setMood('')
     setDrinks('')
     setRating(null)
+    setError('')
     onClose()
   }
 
-  const canSubmit = location.trim() && mood
+  const canSubmit = location.trim() && mood && !loading
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && handleClose()}>
@@ -67,34 +62,16 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit }) {
         </div>
 
         <div className="modal-body">
-          {/* Photo upload */}
-          <div
-            className={`upload-area ${preview ? 'has-file' : ''}`}
-            onClick={() => !preview && fileRef.current.click()}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-          >
-            {preview ? (
-              <img src={preview} alt="preview" />
-            ) : (
-              <>
-                <div className="upload-icon"><CameraIcon size={32} /></div>
-                <div className="upload-hint">
-                  <strong>Click to upload</strong> or drag a photo here
-                </div>
-                <div className="upload-sub">JPG, PNG, WebP</div>
-              </>
-            )}
+          {/* Photo placeholder */}
+          <div className="upload-area" onClick={() => fileRef.current.click()}>
+            <div className="upload-icon"><CameraIcon size={32} /></div>
+            <div className="upload-hint">
+              <strong>Click to upload</strong> or drag a photo here
+            </div>
+            <div className="upload-sub">Photo upload coming soon</div>
           </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleFile}
-          />
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} />
 
-          {/* Caption */}
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">Caption</label>
             <textarea
@@ -106,7 +83,6 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit }) {
           </div>
 
           <div className="form-row">
-            {/* Location */}
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Location</label>
               <input
@@ -116,25 +92,16 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit }) {
                 onChange={e => setLocation(e.target.value)}
               />
             </div>
-
-            {/* Mood */}
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Mood</label>
-              <select
-                className="form-select"
-                value={mood}
-                onChange={e => setMood(e.target.value)}
-              >
+              <select className="form-select" value={mood} onChange={e => setMood(e.target.value)}>
                 <option value="">Select mood</option>
-                {MOODS.map(m => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
+                {MOODS.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
           </div>
 
           <div className="form-row">
-            {/* Drinks */}
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Drinks</label>
               <input
@@ -147,8 +114,6 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit }) {
                 onChange={e => setDrinks(e.target.value)}
               />
             </div>
-
-            {/* Rating */}
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Rating (1–10)</label>
               <div className="rating-selector">
@@ -164,6 +129,16 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit }) {
               </div>
             </div>
           </div>
+
+          {error && (
+            <div style={{
+              color: '#f87171', fontSize: '13px', padding: '10px 12px',
+              background: 'rgba(239,68,68,0.08)', borderRadius: '8px',
+              border: '1px solid rgba(239,68,68,0.2)',
+            }}>
+              {error}
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">
@@ -173,7 +148,7 @@ export default function CreatePostModal({ isOpen, onClose, onSubmit }) {
             disabled={!canSubmit}
             style={{ opacity: canSubmit ? 1 : 0.4, cursor: canSubmit ? 'pointer' : 'not-allowed' }}
           >
-            Share Night
+            {loading ? 'Saving...' : 'Share Night'}
           </button>
         </div>
       </div>
