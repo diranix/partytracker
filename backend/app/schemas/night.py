@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -9,8 +11,19 @@ class NightCreate(BaseModel):
     rating: int = Field(default=5, ge=1, le=10)
 
 
+class NightAuthor(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        from_attributes = True
+
+
 class NightResponse(NightCreate):
     id: int
+    user_id: int
+    user: NightAuthor
+    created_at: datetime
 
     class Config:
         from_attributes = True
