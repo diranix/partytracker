@@ -1,0 +1,47 @@
+services:
+
+  frontend:
+    build: ./frontend
+    container_name: partytracker_frontend_local
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - local_net
+
+  backend:
+    build: ./backend
+    container_name: partytracker_backend_local
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.local
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - local_net
+
+  db:
+    image: postgres:16-alpine
+    container_name: partytracker_db_local
+    restart: always
+    env_file:
+      - .env.local
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - local_net
+
+volumes:
+  postgres_data_local:
+
+networks:
+  local_net:
+    driver: bridge
