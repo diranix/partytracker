@@ -4,13 +4,13 @@ import traceback
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 
-logging.basicConfig(level=logging.DEBUG)
-
 from app.db.database import Base, engine
 from app.models.like import Like  # noqa: F401 — needed for SQLAlchemy to register the table
 from app.models.night import Night  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.routers import auth, likes, nights, stats, users
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = FastAPI(title="Party Tracker API")
 
