@@ -1,18 +1,16 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
+from app.core.hashing import hash_password
 from app.core.security import create_access_token
 from app.db.database import get_db
 from app.models.user import User
 from app.schemas.user import AuthResponse, UserCreate, UserResponse
 
 router = APIRouter(prefix="/users", tags=["Users"])
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @router.get("/me", response_model=UserResponse)
@@ -44,7 +42,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = User(
         username=user.username,
         email=user.email,
-        hashed_password=pwd_context.hash(user.password),
+        hashed_password=hash_password(user.password),
     )
     db.add(db_user)
     db.commit()
