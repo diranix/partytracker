@@ -13,7 +13,6 @@ export default function AuthPage({ onAuth }) {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     try {
       let data
       if (mode === 'register') {
@@ -38,19 +37,43 @@ export default function AuthPage({ onAuth }) {
 
   return (
     <div className="auth-page">
-      <div className="auth-brand">
-        <div className="auth-brand-logo">
-          <span>Party</span>Tracker
+      {/* Hero Left */}
+      <div className="auth-hero">
+        <div className="auth-hero-orb" />
+        <div className="auth-hero-orb2" />
+        <div className="auth-hero-content">
+          <div className="auth-hero-logo">
+            <span style={{ color: 'var(--accent)', fontSize: 24 }}>✦</span>
+            Party<span>Tracker</span>
+          </div>
+          <div className="auth-hero-tag">
+            <span>🎉</span> Social Nightlife App
+          </div>
+          <h1 className="auth-hero-headline">
+            Document the nights<br />worth remembering.
+          </h1>
+          <p className="auth-hero-sub">
+            A premium social feed for your nightlife. Share where you were,
+            how it felt, and what made it unforgettable.
+          </p>
+          <div className="auth-hero-stats">
+            <div>
+              <div className="auth-hero-stat-value">2.4K+</div>
+              <div className="auth-hero-stat-label">Nights tracked</div>
+            </div>
+            <div>
+              <div className="auth-hero-stat-value">840+</div>
+              <div className="auth-hero-stat-label">Active users</div>
+            </div>
+            <div>
+              <div className="auth-hero-stat-value">12K+</div>
+              <div className="auth-hero-stat-label">Memories saved</div>
+            </div>
+          </div>
         </div>
-        <h1 className="auth-brand-headline">
-          Document the nights<br />worth remembering.
-        </h1>
-        <p className="auth-brand-sub">
-          A social feed for your nightlife. Share where you were,
-          how it felt, and what made it unforgettable.
-        </p>
       </div>
 
+      {/* Form Right */}
       <div className="auth-form-side">
         <div className="auth-form-box">
           <h2 className="auth-form-title">
@@ -58,7 +81,7 @@ export default function AuthPage({ onAuth }) {
           </h2>
           <p className="auth-form-subtitle">
             {mode === 'login'
-              ? 'Sign in to your account to continue.'
+              ? 'Sign in to continue your nightlife journey.'
               : 'Join and start documenting your nights.'}
           </p>
 
@@ -76,7 +99,6 @@ export default function AuthPage({ onAuth }) {
                 />
               </div>
             )}
-
             <div className="form-group">
               <label className="form-label">Email</label>
               <input
@@ -88,7 +110,6 @@ export default function AuthPage({ onAuth }) {
                 required
               />
             </div>
-
             <div className="form-group">
               <label className="form-label">Password</label>
               <input
@@ -101,36 +122,20 @@ export default function AuthPage({ onAuth }) {
               />
             </div>
 
-            {error && (
-              <div style={{
-                color: '#f87171',
-                fontSize: '13px',
-                marginBottom: '12px',
-                padding: '10px 12px',
-                background: 'rgba(239,68,68,0.08)',
-                borderRadius: '8px',
-                border: '1px solid rgba(239,68,68,0.2)',
-              }}>
-                {error}
-              </div>
-            )}
+            {error && <div className="form-error">{error}</div>}
 
             <button type="submit" className="form-submit" disabled={loading}>
-              {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
+              {loading
+                ? 'Please wait...'
+                : mode === 'login' ? 'Sign In' : 'Create Account'}
             </button>
           </form>
 
           <div className="auth-switch">
             {mode === 'login' ? (
-              <>
-                Don&apos;t have an account?
-                <button onClick={() => { setMode('register'); setError('') }}>Sign up</button>
-              </>
+              <>Don&apos;t have an account?<button onClick={() => { setMode('register'); setError('') }}>Sign up</button></>
             ) : (
-              <>
-                Already have an account?
-                <button onClick={() => { setMode('login'); setError('') }}>Sign in</button>
-              </>
+              <>Already have an account?<button onClick={() => { setMode('login'); setError('') }}>Sign in</button></>
             )}
           </div>
         </div>
