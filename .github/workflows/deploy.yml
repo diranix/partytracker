@@ -45,7 +45,14 @@ jobs:
           safety check -r backend/requirements.txt
 
       - name: Validate docker-compose
-        run: docker compose -f docker-compose.yml config --quiet
+        run: |
+          echo "POSTGRES_USER=test" > .env.test
+          echo "POSTGRES_DB=test" >> .env.test
+          echo "POSTGRES_PASSWORD=test" >> .env.test
+          echo "DATABASE_URL=test" >> .env.test
+          echo "SECRET_KEY=test" >> .env.test
+          docker compose --env-file .env.test -f docker-compose.yml config --quiet
+          rm .env.test
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
