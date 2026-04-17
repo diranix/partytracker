@@ -1,24 +1,26 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { apiFetch, getToken, removeToken } from './api/client'
+import type { User } from './api/types'
 import AuthPage from './pages/AuthPage'
 import FeedPage from './pages/FeedPage'
 import ProfilePage from './pages/ProfilePage'
+import StatsPage from './pages/StatsPage'
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const token = getToken()
     if (!token) { setLoading(false); return }
-    apiFetch('/users/me')
+    apiFetch<User>('/users/me')
       .then(user => setCurrentUser(user))
       .catch(() => removeToken())
       .finally(() => setLoading(false))
   }, [])
 
-  const handleAuth = (user) => setCurrentUser(user)
+  const handleAuth = (user: User) => setCurrentUser(user)
 
   const handleLogout = () => {
     removeToken()
@@ -27,8 +29,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <span style={{ color: 'var(--color-muted)', fontSize: '14px' }}>Loading...</span>
       </div>
     )
   }
@@ -47,6 +49,10 @@ export default function App() {
         <Route
           path="/profile"
           element={currentUser ? <ProfilePage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/stats"
+          element={currentUser ? <StatsPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />}
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
