@@ -4,6 +4,10 @@ import { apiFetch, getToken, removeToken } from './api/client'
 import AuthPage from './pages/AuthPage'
 import FeedPage from './pages/FeedPage'
 import ProfilePage from './pages/ProfilePage'
+import EventDetailPage from './pages/EventDetailPage'
+import FriendsPage from './pages/FriendsPage'
+import MemoriesPage from './pages/MemoriesPage'
+import MapPage from './pages/MapPage'
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -27,8 +31,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading...</div>
+      <div className="loading-screen">
+        <div className="loading-dot" />
       </div>
     )
   }
@@ -36,18 +40,13 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={currentUser ? <Navigate to="/feed" /> : <AuthPage onAuth={handleAuth} />}
-        />
-        <Route
-          path="/feed"
-          element={currentUser ? <FeedPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/profile"
-          element={currentUser ? <ProfilePage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />}
-        />
+        <Route path="/" element={currentUser ? <Navigate to="/feed" /> : <AuthPage onAuth={handleAuth} />} />
+        <Route path="/feed" element={currentUser ? <FeedPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />} />
+        <Route path="/profile" element={currentUser ? <ProfilePage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />} />
+        <Route path="/events/:id" element={currentUser ? <EventDetailPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />} />
+        <Route path="/friends" element={currentUser ? <FriendsPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />} />
+        <Route path="/memories" element={currentUser ? <MemoriesPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />} />
+        <Route path="/map" element={currentUser ? <MapPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
