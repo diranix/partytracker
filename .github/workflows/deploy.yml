@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-         python-version: '3.11'
+          python-version: "3.11"
 
       - name: Check no secrets in repo
         run: |
@@ -43,6 +43,9 @@ jobs:
       - name: SCA (safety)
         run: |
           safety check -r backend/requirements.txt
+
+      - name: Validate docker-compose
+        run: docker compose -f docker-compose.yml config --quiet
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
