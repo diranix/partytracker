@@ -4,6 +4,11 @@ export interface User {
   email: string
 }
 
+export interface NightAuthor {
+  id: number
+  username: string
+}
+
 export interface Night {
   id: number
   title: string
@@ -12,11 +17,11 @@ export interface Night {
   rating: number
   mood?: string
   drinks_count: number
-  date: string
-  owner_id: number
-  owner_username?: string
-  likes_count?: number
-  is_liked?: boolean
+  created_at: string
+  user_id: number
+  user: NightAuthor
+  like_count: number
+  liked_by_me: boolean
 }
 
 export interface AuthResponse {

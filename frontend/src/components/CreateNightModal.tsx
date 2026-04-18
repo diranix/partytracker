@@ -21,7 +21,7 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
   const [mood, setMood] = useState('Vibes')
   const [type, setType] = useState('Party')
   const [privacy, setPrivacy] = useState('Friends')
-  const [rating, setRating] = useState(4)
+  const [rating, setRating] = useState(7)
   const [drinks, setDrinks] = useState(0)
   const [taggedFriends, setTaggedFriends] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -44,7 +44,6 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
           mood: mood.toLowerCase(),
           drinks_count: drinks,
           rating,
-          date: new Date().toISOString().split('T')[0],
         }),
       })
       onCreated(post)
@@ -129,9 +128,9 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
 
             {/* Rating */}
             <div>
-              <div className="form-label">Rating</div>
+              <div className="form-label">Rating (1–10) — current: {rating}/10</div>
               <div className="rating-stars-selector">
-                {[1, 2, 3, 4, 5].map(n => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                   <button key={n} type="button" className={`star-btn ${n <= rating ? 'filled' : ''}`} onClick={() => setRating(n)}>★</button>
                 ))}
               </div>

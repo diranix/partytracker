@@ -1,5 +1,6 @@
 import { Calendar, Map, Plus, Users, Moon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api/client'
 import type { Night, User } from '../api/types'
 import Sidebar from '../components/Sidebar'
@@ -27,6 +28,7 @@ export default function FeedPage({ currentUser, onLogout }: Props) {
   const [loading, setLoading] = useState(true)
   const [showNight, setShowNight] = useState(false)
   const [showEvent, setShowEvent] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     apiFetch<Night[]>('/nights/')
@@ -36,8 +38,8 @@ export default function FeedPage({ currentUser, onLogout }: Props) {
   const quickActions = [
     { icon: <Moon size={22} />, label: 'New Night', sub: 'Share your vibe', onClick: () => setShowNight(true) },
     { icon: <Calendar size={22} />, label: 'New Event', sub: 'Plan something', onClick: () => setShowEvent(true) },
-    { icon: <Users size={22} />, label: 'Invite', sub: 'Grow your crew', onClick: () => {} },
-    { icon: <Map size={22} />, label: 'Live Map', sub: "See who's out", onClick: () => {} },
+    { icon: <Users size={22} />, label: 'Invite', sub: 'Grow your crew', onClick: () => navigate('/friends') },
+    { icon: <Map size={22} />, label: 'Live Map', sub: "See who's out", onClick: () => navigate('/map') },
   ]
 
   return (
@@ -73,7 +75,7 @@ export default function FeedPage({ currentUser, onLogout }: Props) {
           <div>
             <div className="section-header">
               <span className="section-title">Out Now</span>
-              <span className="view-all">View all</span>
+              <span className="view-all" style={{ cursor: 'pointer' }} onClick={() => navigate('/friends')}>View all</span>
             </div>
             <div className="friends-row">
               {MOCK_FRIENDS.map(f => (
@@ -97,7 +99,7 @@ export default function FeedPage({ currentUser, onLogout }: Props) {
           <div>
             <div className="section-header">
               <span className="section-title">Upcoming Events</span>
-              <span className="view-all">View all</span>
+              <span className="view-all" style={{ cursor: 'pointer' }} onClick={() => navigate('/events')}>View all</span>
             </div>
             <div className="events-grid">
               {MOCK_EVENTS.map(ev => (
