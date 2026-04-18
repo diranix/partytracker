@@ -19,8 +19,8 @@ function timeAgo(dateStr: string) {
 }
 
 export default function PostCard({ post }: { post: Night }) {
-  const [liked, setLiked] = useState(post.is_liked ?? false)
-  const [likes, setLikes] = useState(post.likes_count ?? 0)
+  const [liked, setLiked] = useState(post.liked_by_me)
+  const [likes, setLikes] = useState(post.like_count)
   const [liking, setLiking] = useState(false)
 
   const handleLike = async () => {
@@ -29,14 +29,15 @@ export default function PostCard({ post }: { post: Night }) {
     const was = liked
     setLiked(!was); setLikes(n => was ? n - 1 : n + 1)
     try {
-      await apiFetch(`/nights/${post.id}/${was ? 'unlike' : 'like'}`, { method: 'POST' })
+      await apiFetch(`/nights/${post.id}/like`, { method: 'POST' })
     } catch {
       setLiked(was); setLikes(n => was ? n + 1 : n - 1)
     } finally { setLiking(false) }
   }
 
   const mood = post.mood?.toLowerCase() ?? ''
-  const initial = (post.owner_username ?? 'U')[0].toUpperCase()
+  const username = post.user?.username ?? 'Unknown'
+  const initial = username[0].toUpperCase()
 
   return (
     <article className="post-card">
@@ -45,8 +46,8 @@ export default function PostCard({ post }: { post: Night }) {
           {initial}
         </div>
         <div className="post-user-info">
-          <div className="post-username">{post.owner_username ?? 'You'}</div>
-          <div className="post-time">{timeAgo(post.date)}</div>
+          <div className="post-username">{username}</div>
+          <div className="post-time">{timeAgo(post.created_at)}</div>
         </div>
         {mood && (
           <span className="mood-tag">
@@ -65,7 +66,9 @@ export default function PostCard({ post }: { post: Night }) {
             <div className="post-meta-item"><span>🍹</span><span>{post.drinks_count} drinks</span></div>
           )}
           {post.rating > 0 && (
-            <div className="rating-stars">{'★'.repeat(post.rating)}{'☆'.repeat(Math.max(0, 5 - post.rating))}</div>
+            <div className="rating-stars">
+              {'★'.repeat(post.rating)}{'☆'.repeat(Math.max(0, 10 - post.rating))}
+            </div>
           )}
         </div>
         {post.caption && (
