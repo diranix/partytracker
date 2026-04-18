@@ -1,29 +1,34 @@
 import logging
 import traceback
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 
 from app.db.database import Base, engine
-from app.models.like import Like  # noqa: F401 — needed for SQLAlchemy to register the table
+from app.models.like import Like  # noqa: F401 — registers table with SQLAlchemy
 from app.models.night import Night  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.routers import auth, likes, nights, stats, users
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Party Tracker API")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables ensured")
+    yield
+
+
+app = FastAPI(title="Party Tracker API", lifespan=lifespan)
 
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    logging.error(traceback.format_exc())
+async def global_exception_handler(_request: Request, exc: Exception):
+    logger.error(traceback.format_exc())
     return PlainTextResponse(str(exc), status_code=500)
-
-
-@app.on_event("startup")
-def on_startup():
-    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/")
