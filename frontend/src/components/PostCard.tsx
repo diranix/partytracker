@@ -1,5 +1,5 @@
 import { Heart, MessageCircle, Share2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { apiFetch } from '../api/client'
 import type { Night } from '../api/types'
 
@@ -22,22 +22,27 @@ export default function PostCard({ post }: { post: Night }) {
   const [liked, setLiked] = useState(post.liked_by_me)
   const [likes, setLikes] = useState(post.like_count)
   const [liking, setLiking] = useState(false)
+  // key trick: increment to re-trigger CSS animation on every like
+  const [heartKey, setHeartKey] = useState(0)
 
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     if (liking) return
     setLiking(true)
     const was = liked
-    setLiked(!was); setLikes(n => was ? n - 1 : n + 1)
+    setLiked(!was)
+    setLikes(n => was ? n - 1 : n + 1)
+    if (!was) setHeartKey(k => k + 1)
     try {
       await apiFetch(`/nights/${post.id}/like`, { method: 'POST' })
     } catch {
       setLiked(was); setLikes(n => was ? n + 1 : n - 1)
     } finally { setLiking(false) }
-  }
+  }, [liking, liked, post.id])
 
   const mood = post.mood?.toLowerCase() ?? ''
   const username = post.user?.username ?? 'Unknown'
   const initial = username[0].toUpperCase()
+  const trending = likes >= 3
 
   return (
     <article className="post-card">
@@ -49,11 +54,16 @@ export default function PostCard({ post }: { post: Night }) {
           <div className="post-username">{username}</div>
           <div className="post-time">{timeAgo(post.created_at)}</div>
         </div>
-        {mood && (
-          <span className="mood-tag">
-            {MOODS[mood] ?? '🎉'} {post.mood}
-          </span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+          {trending && (
+            <span className="trending-badge" key={`trend-${likes}`}>🔥 Hot</span>
+          )}
+          {mood && (
+            <span className="mood-tag">
+              {MOODS[mood] ?? '🎉'} {post.mood}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="post-body">
@@ -76,7 +86,8 @@ export default function PostCard({ post }: { post: Night }) {
         )}
         <div className="post-actions">
           <button className={`like-btn${liked ? ' liked' : ''}`} onClick={handleLike}>
-            <Heart size={14} fill={liked ? 'currentColor' : 'none'} />
+            {/* key forces re-mount → re-triggers CSS heartbeat animation */}
+            <Heart key={heartKey} size={14} fill={liked ? 'currentColor' : 'none'} />
             <span>{likes > 0 ? likes : 'Like'}</span>
           </button>
           <button className="action-btn">
