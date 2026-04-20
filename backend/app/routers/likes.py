@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
@@ -34,5 +35,5 @@ def toggle_like(
         db.commit()
         liked = True
 
-    like_count = db.query(Like).filter(Like.night_id == night_id).count()
+    like_count = db.query(func.count(Like.id)).filter(Like.night_id == night_id).scalar() or 0
     return {"liked": liked, "like_count": like_count}
