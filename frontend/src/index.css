@@ -574,6 +574,7 @@ select option { background: var(--surface2); }
   transition: all var(--tr); text-align: center;
 }
 .upload-area:hover { border-color: var(--accent); background: var(--accent-dim); }
+.upload-area.dragging { border-color: var(--accent2); background: var(--accent-dim); box-shadow: 0 0 0 4px rgba(124,58,237,0.15); }
 .mood-pills { display: flex; gap: 8px; flex-wrap: wrap; }
 .mood-pill {
   padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
