@@ -1,5 +1,5 @@
-import { Calendar, Map, Plus, Users, Moon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Calendar, Map, Plus, Users, Moon, ArrowUp } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api/client'
 import type { Night, User } from '../api/types'
@@ -15,12 +15,24 @@ export default function FeedPage({ currentUser, onLogout }: Props) {
   const [loading, setLoading] = useState(true)
   const [showNight, setShowNight] = useState(false)
   const [showEvent, setShowEvent] = useState(false)
+  const [showScrollTop, setShowScrollTop] = useState(false)
+  const mainRef = useRef<HTMLElement>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     apiFetch<Night[]>('/nights/')
       .then(setPosts).catch(() => {}).finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    const el = mainRef.current
+    if (!el) return
+    const onScroll = () => setShowScrollTop(el.scrollTop > 300)
+    el.addEventListener('scroll', onScroll)
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const scrollToTop = () => mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
 
   const quickActions = [
     { icon: <Moon size={22} />, label: 'New Night', sub: 'Share your vibe', onClick: () => setShowNight(true) },
@@ -33,7 +45,7 @@ export default function FeedPage({ currentUser, onLogout }: Props) {
     <div className="app-layout">
       <Sidebar currentUser={currentUser} onCreateClick={() => setShowNight(true)} onLogout={onLogout} />
 
-      <main className="app-content">
+      <main className="app-content" ref={mainRef}>
         <div className="page-header">
           <div>
             <div className="page-title">Feed</div>
@@ -86,6 +98,12 @@ export default function FeedPage({ currentUser, onLogout }: Props) {
           </div>
         </div>
       </main>
+
+      {showScrollTop && (
+        <button className="scroll-top-btn" onClick={scrollToTop} title="Back to top">
+          <ArrowUp size={18} />
+        </button>
+      )}
 
       {showNight && (
         <CreateNightModal
