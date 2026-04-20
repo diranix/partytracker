@@ -15,9 +15,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def _run_migrations():
+    """Add columns that may be missing from existing tables (no Alembic)."""
+    migrations = [
+        "ALTER TABLE nights ADD COLUMN IF NOT EXISTS caption  VARCHAR",
+        "ALTER TABLE nights ADD COLUMN IF NOT EXISTS location VARCHAR",
+        "ALTER TABLE nights ADD COLUMN IF NOT EXISTS mood     VARCHAR",
+    ]
+    with engine.connect() as conn:
+        for sql in migrations:
+            try:
+                conn.execute(__import__('sqlalchemy').text(sql))
+            except Exception as e:
+                logger.warning("Migration skipped: %s", e)
+        conn.commit()
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
+    _run_migrations()
     logger.info("Database tables ensured")
     yield
 
