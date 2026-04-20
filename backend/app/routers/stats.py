@@ -1,10 +1,8 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_current_user, get_optional_user
+from app.core.deps import get_current_user
 from app.db.database import get_db
 from app.models.like import Like
 from app.models.night import Night
