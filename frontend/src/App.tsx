@@ -8,6 +8,7 @@ import FeedPage from './pages/FeedPage'
 import FriendsPage from './pages/FriendsPage'
 import MapPage from './pages/MapPage'
 import MemoriesPage from './pages/MemoriesPage'
+import MessagesPage from './pages/MessagesPage'
 import ProfilePage from './pages/ProfilePage'
 
 export default function App() {
@@ -45,7 +46,8 @@ export default function App() {
         <Route path="/friends"  element={auth(<FriendsPage  currentUser={currentUser!} onLogout={handleLogout} />)} />
         <Route path="/memories" element={auth(<MemoriesPage currentUser={currentUser!} onLogout={handleLogout} />)} />
         <Route path="/map"      element={auth(<MapPage      currentUser={currentUser!} onLogout={handleLogout} />)} />
-        <Route path="/profile"  element={auth(<ProfilePage  currentUser={currentUser!} onLogout={handleLogout} />)} />
+        <Route path="/messages" element={auth(<MessagesPage currentUser={currentUser!} onLogout={handleLogout} />)} />
+        <Route path="/profile"  element={auth(<ProfilePage  currentUser={currentUser!} onLogout={handleLogout} onUserUpdated={setCurrentUser} />)} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

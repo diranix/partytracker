@@ -8,13 +8,33 @@ from app.core.hashing import hash_password
 from app.core.security import create_access_token
 from app.db.database import get_db
 from app.models.user import User
-from app.schemas.user import AuthResponse, UserCreate, UserResponse
+from app.schemas.user import AuthResponse, UserCreate, UserResponse, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.patch("/me", response_model=UserResponse)
+def update_me(
+    data: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if data.username is not None:
+        taken = db.query(User).filter(User.username == data.username, User.id != current_user.id).first()
+        if taken:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        current_user.username = data.username
+    if data.bio is not None:
+        current_user.bio = data.bio
+    if data.location is not None:
+        current_user.location = data.location
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 

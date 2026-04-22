@@ -2,6 +2,8 @@ export interface User {
   id: number
   username: string
   email: string
+  bio?: string
+  location?: string
 }
 
 export interface NightAuthor {

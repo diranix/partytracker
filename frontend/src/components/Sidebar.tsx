@@ -1,4 +1,4 @@
-import { BarChart2, Calendar, Camera, LogOut, Map, Sparkles, Users, Home, User } from 'lucide-react'
+import { Calendar, Camera, LogOut, Map, MessageSquare, Sparkles, Users, Home, User } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { User as UserType } from '../api/types'
 
@@ -29,7 +29,7 @@ function NavItem({ icon, label, path, badge }: NavItemProps) {
   )
 }
 
-export default function Sidebar({ currentUser, onCreateClick, onLogout }: SidebarProps) {
+export default function Sidebar({ currentUser, onLogout }: SidebarProps) {
   const navigate = useNavigate()
   const initial = currentUser.username[0].toUpperCase()
 
@@ -45,12 +45,13 @@ export default function Sidebar({ currentUser, onCreateClick, onLogout }: Sideba
 
       {/* Nav */}
       <nav className="sidebar-nav">
-        <NavItem icon={<Home size={17} />} label="Feed" path="/feed" />
-        <NavItem icon={<Calendar size={17} />} label="Events" path="/events" />
-        <NavItem icon={<Users size={17} />} label="Friends" path="/friends" />
-        <NavItem icon={<Camera size={17} />} label="Memories" path="/memories" />
-        <NavItem icon={<Map size={17} />} label="Live Map" path="/map" />
-        <NavItem icon={<User size={17} />} label="Profile" path="/profile" />
+        <NavItem icon={<Home size={17} />}         label="Feed"      path="/feed" />
+        <NavItem icon={<Calendar size={17} />}     label="Events"    path="/events" />
+        <NavItem icon={<Users size={17} />}        label="Friends"   path="/friends" />
+        <NavItem icon={<MessageSquare size={17} />} label="Messages" path="/messages" badge={3} />
+        <NavItem icon={<Camera size={17} />}       label="Memories"  path="/memories" />
+        <NavItem icon={<Map size={17} />}          label="Live Map"  path="/map" />
+        <NavItem icon={<User size={17} />}         label="Profile"   path="/profile" />
       </nav>
 
       {/* User */}

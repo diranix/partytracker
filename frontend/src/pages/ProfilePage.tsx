@@ -1,21 +1,28 @@
+import { Edit2, MapPin } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { apiFetch } from '../api/client'
 import type { Night, User } from '../api/types'
 import CreateNightModal from '../components/CreateNightModal'
+import EditProfileModal from '../components/EditProfileModal'
 import Sidebar from '../components/Sidebar'
 
-interface Props { currentUser: User; onLogout: () => void }
+interface Props {
+  currentUser: User
+  onLogout: () => void
+  onUserUpdated: (u: User) => void
+}
 
 const MOODS: Record<string, string> = {
   euphoric: '🔥', chill: '😌', happy: '😊', intense: '⚡',
   wild: '🌪️', tired: '😴', vibes: '✨', intimate: '🕯️',
 }
 
-export default function ProfilePage({ currentUser, onLogout }: Props) {
+export default function ProfilePage({ currentUser, onLogout, onUserUpdated }: Props) {
   const [nights, setNights] = useState<Night[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'nights' | 'highlights' | 'memories'>('nights')
   const [showCreate, setShowCreate] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
 
   const initial = currentUser.username[0].toUpperCase()
 
@@ -26,7 +33,7 @@ export default function ProfilePage({ currentUser, onLogout }: Props) {
 
   const totalDrinks = nights.reduce((s, n) => s + n.drinks_count, 0)
   const avgRating = nights.length ? (nights.reduce((s, n) => s + n.rating, 0) / nights.length).toFixed(1) : '—'
-  const totalLikes = nights.reduce((s, n) => s + (n.likes_count ?? 0), 0)
+  const totalLikes = nights.reduce((s, n) => s + (n.like_count ?? 0), 0)
 
   const STATS = [
     { icon: '🌙', value: loading ? '—' : nights.length, label: 'Nights' },
@@ -60,13 +67,28 @@ export default function ProfilePage({ currentUser, onLogout }: Props) {
         {/* Info */}
         <div className="profile-info">
           <div className="profile-avatar-large">{initial}</div>
-          <div style={{ paddingBottom: 8 }}>
+          <div style={{ paddingBottom: 8, flex: 1 }}>
             <div className="profile-name">{currentUser.username}</div>
             <div className="profile-handle">@{currentUser.username.toLowerCase()}</div>
+            {currentUser.location && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
+                <MapPin size={11} /> {currentUser.location}
+              </div>
+            )}
+            {currentUser.bio && (
+              <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 6, maxWidth: 320, lineHeight: 1.5 }}>
+                {currentUser.bio}
+              </div>
+            )}
           </div>
-          <button className="profile-edit-btn" onClick={() => setShowCreate(true)}>
-            + Log Night
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignSelf: 'flex-end', paddingBottom: 4 }}>
+            <button className="btn-secondary" style={{ padding: '8px 14px' }} onClick={() => setShowEdit(true)}>
+              <Edit2 size={13} /> Edit Profile
+            </button>
+            <button className="profile-edit-btn" onClick={() => setShowCreate(true)}>
+              + Log Night
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -117,7 +139,7 @@ export default function ProfilePage({ currentUser, onLogout }: Props) {
                       {n.location && <div style={{ fontSize: 10, color: 'var(--muted)' }}>📍 {n.location}</div>}
                     </div>
                     <div className="profile-grid-overlay">
-                      <div className="grid-stat"><span>❤️</span><span>{n.likes_count ?? 0}</span></div>
+                      <div className="grid-stat"><span>❤️</span><span>{n.like_count ?? 0}</span></div>
                       <div className="grid-stat"><span>⭐</span><span>{n.rating}</span></div>
                     </div>
                   </div>
@@ -142,6 +164,14 @@ export default function ProfilePage({ currentUser, onLogout }: Props) {
           currentUser={currentUser}
           onClose={() => setShowCreate(false)}
           onCreated={n => { setNights(p => [n, ...p]); setShowCreate(false) }}
+        />
+      )}
+
+      {showEdit && (
+        <EditProfileModal
+          currentUser={currentUser}
+          onClose={() => setShowEdit(false)}
+          onSaved={u => { onUserUpdated(u); setShowEdit(false) }}
         />
       )}
     </div>

@@ -25,6 +25,8 @@ def _run_migrations():
         "ALTER TABLE nights ADD COLUMN IF NOT EXISTS caption  VARCHAR",
         "ALTER TABLE nights ADD COLUMN IF NOT EXISTS location VARCHAR",
         "ALTER TABLE nights ADD COLUMN IF NOT EXISTS mood     VARCHAR",
+        "ALTER TABLE users  ADD COLUMN IF NOT EXISTS bio      VARCHAR",
+        "ALTER TABLE users  ADD COLUMN IF NOT EXISTS location VARCHAR",
     ]
     with engine.connect() as conn:
         for sql in migrations:
