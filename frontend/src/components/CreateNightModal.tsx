@@ -1,5 +1,5 @@
-import { ArrowLeft, MapPin, Upload, X, Image } from 'lucide-react'
-import { useState, useRef, useCallback } from 'react'
+import { ArrowLeft, MapPin, Upload, X, Film } from 'lucide-react'
+import { useState, useCallback } from 'react'
 import { apiFetch } from '../api/client'
 import type { Night, User } from '../api/types'
 
@@ -13,6 +13,9 @@ const MOODS = ['Chill', 'Vibes', 'Intimate', 'Euphoric', 'Wild', 'Tired']
 const TYPES = ['Party', 'Club', 'Bar', 'House Party', 'Concert', 'Festival', 'Dinner', 'Other']
 const PRIVACY = ['Public', 'Friends', 'Close Friends', 'Private']
 const MOCK_FRIENDS = ['Sarah', 'Mike', 'Emma', 'Jake', 'Lisa', 'Tom']
+
+const FILE_INPUT_ID = 'night-media-upload'
+const FILE_INPUT_MORE_ID = 'night-media-upload-more'
 
 export default function CreateNightModal({ currentUser, onClose, onCreated }: Props) {
   const [title, setTitle] = useState('Epic night at The Rooftop 🎉')
@@ -28,7 +31,6 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
   const [error, setError] = useState('')
   const [mediaFiles, setMediaFiles] = useState<{ file: File; url: string }[]>([])
   const [dragging, setDragging] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const toggleFriend = (name: string) =>
     setTaggedFriends(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name])
@@ -47,6 +49,8 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
     })
   }
 
+  const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setDragging(true) }
+  const onDragLeave = () => setDragging(false)
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragging(false)
@@ -103,22 +107,31 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
             <div>
               <div className="form-label">Photos & Videos</div>
 
-              {/* Hidden file input */}
+              {/* File inputs — outside the label to avoid nesting issues */}
               <input
-                ref={fileInputRef}
+                id={FILE_INPUT_ID}
                 type="file"
                 accept="image/*,video/*"
                 multiple
-                style={{ display: 'none' }}
-                onChange={e => addFiles(e.target.files)}
+                style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+                onChange={e => { addFiles(e.target.files); e.target.value = '' }}
+              />
+              <input
+                id={FILE_INPUT_MORE_ID}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+                onChange={e => { addFiles(e.target.files); e.target.value = '' }}
               />
 
-              {/* Drop zone */}
-              <div
+              {/* Drop zone — label opens file dialog natively */}
+              <label
+                htmlFor={FILE_INPUT_ID}
                 className={`upload-area${dragging ? ' dragging' : ''}`}
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={e => { e.preventDefault(); setDragging(true) }}
-                onDragLeave={() => setDragging(false)}
+                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
                 onDrop={onDrop}
               >
                 <Upload size={28} style={{ color: dragging ? 'var(--accent2)' : 'var(--muted)' }} />
@@ -129,7 +142,7 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
                   Drag & drop or <span style={{ color: 'var(--accent2)', fontWeight: 600 }}>click to browse</span>
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--muted2)' }}>JPG, PNG, GIF, MP4 · up to 6 files</div>
-              </div>
+              </label>
 
               {/* Thumbnails */}
               {mediaFiles.length > 0 && (
@@ -138,20 +151,21 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
                     <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
                       {m.file.type.startsWith('video/') ? (
                         <div style={{ width: '100%', height: '100%', background: 'var(--surface3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 4 }}>
-                          <Image size={22} style={{ color: 'var(--muted)' }} />
+                          <Film size={22} style={{ color: 'var(--muted)' }} />
                           <span style={{ fontSize: 10, color: 'var(--muted)' }}>Video</span>
                         </div>
                       ) : (
                         <img src={m.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       )}
                       <button
-                        onClick={e => { e.stopPropagation(); removeMedia(i) }}
+                        type="button"
+                        onClick={e => { e.preventDefault(); removeMedia(i) }}
                         style={{
                           position: 'absolute', top: 4, right: 4,
                           width: 20, height: 20, borderRadius: '50%',
-                          background: 'rgba(0,0,0,0.7)', color: '#fff',
+                          background: 'rgba(0,0,0,0.75)', color: '#fff',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 10, cursor: 'pointer', border: 'none',
+                          cursor: 'pointer', border: 'none',
                         }}
                       >
                         <X size={10} />
@@ -159,17 +173,16 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
                     </div>
                   ))}
                   {mediaFiles.length < 6 && (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
+                    <label
+                      htmlFor={FILE_INPUT_MORE_ID}
                       style={{
                         aspectRatio: '1', borderRadius: 10, border: '2px dashed var(--border)',
                         background: 'var(--surface3)', display: 'flex', alignItems: 'center',
                         justifyContent: 'center', cursor: 'pointer', color: 'var(--muted)',
-                        transition: 'border-color 0.15s ease',
                       }}
                     >
                       <Upload size={18} />
-                    </button>
+                    </label>
                   )}
                 </div>
               )}
