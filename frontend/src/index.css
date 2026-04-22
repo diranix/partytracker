@@ -901,6 +901,55 @@ select option { background: var(--surface2); }
   border-radius: var(--radius); padding: 18px; text-align: center;
 }
 
+/* ── Location autocomplete ── */
+.location-suggestions {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 300;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: fadeIn 0.15s ease;
+}
+.location-suggestion-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  width: 100%; padding: 10px 12px; text-align: left;
+  font-size: 12px; color: var(--text); transition: background var(--tr);
+  border-bottom: 1px solid var(--border2); line-height: 1.4;
+}
+.location-suggestion-item:last-child { border-bottom: none; }
+.location-suggestion-item:hover { background: var(--surface3); color: var(--accent2); }
+
+/* ── Map page extras ── */
+.map-night-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  cursor: pointer; transition: all var(--tr);
+}
+.map-night-item:hover { border-color: var(--accent); background: var(--accent-dim); }
+.map-night-item.active { border-color: var(--accent); background: var(--accent-dim); }
+.map-add-btn {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 1000; padding: 10px 24px;
+  background: var(--accent); color: #fff;
+  border-radius: 100px; font-size: 13px; font-weight: 700;
+  box-shadow: 0 4px 20px var(--accent-glow); transition: all var(--tr);
+  border: none; cursor: pointer;
+}
+.map-add-btn:hover { background: #6D28D9; transform: translateX(-50%) translateY(-2px); box-shadow: 0 8px 28px var(--accent-glow); }
+
+/* Leaflet popup dark theme */
+.leaflet-popup-content-wrapper {
+  background: var(--surface2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+}
+.leaflet-popup-tip { background: var(--surface2) !important; }
+.leaflet-popup-close-button { color: var(--muted) !important; }
+
+/* Spin animation for loader */
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
 /* ── Edit Profile Modal ── */
 .edit-profile-panel {
   background: var(--bg); border-radius: var(--radius-lg) var(--radius-lg) 0 0;

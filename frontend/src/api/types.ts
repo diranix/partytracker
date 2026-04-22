@@ -16,6 +16,8 @@ export interface Night {
   title: string
   caption?: string
   location?: string
+  lat?: number
+  lng?: number
   rating: number
   mood?: string
   drinks_count: number
