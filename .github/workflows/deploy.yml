@@ -22,15 +22,17 @@ jobs:
 
       - name: Check no secrets in repo
         run: |
-          if [ -f .env ]; then
-            echo ".env file found in repository!"
-            exit 1
-          fi
-          echo "No .env file found - OK"
+          for f in .env .env.local .env.production .env.staging; do
+            if [ -f "$f" ]; then
+              echo "Secret file found in repository: $f"
+              exit 1
+            fi
+          done
+          echo "No secret files found - OK"
 
       - name: Install security tools
         run: |
-          pip install bandit safety flake8
+          pip install bandit flake8 pip-audit
 
       - name: Lint (flake8)
         run: |
@@ -40,22 +42,24 @@ jobs:
         run: |
           bandit -r backend/app -ll
 
-      - name: SCA (safety)
+      - name: SCA (pip-audit)
         run: |
-          safety check -r backend/requirements.txt
+          pip-audit -r backend/requirements.txt
 
       - name: Validate docker-compose
         run: |
-          touch .env
-          echo "POSTGRES_USER=test" > .env.test
-          echo "POSTGRES_DB=test" >> .env.test
-          echo "POSTGRES_PASSWORD=test" >> .env.test
-          echo "DATABASE_URL=test" >> .env.test
-          echo "SECRET_KEY=test" >> .env.test
-          docker compose --env-file .env.test -f docker-compose.yml config --quiet
-          rm .env .env.test
+          cat > .env << 'EOF'
+          POSTGRES_USER=test
+          POSTGRES_DB=test
+          POSTGRES_PASSWORD=test
+          DATABASE_URL=postgresql://test:test@db:5432/test
+          SECRET_KEY=ci-test-secret-key
+          EOF
+          docker compose -f docker-compose.yml config --quiet
+          rm -f .env
 
       - name: Deploy to server
+        if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -68,6 +72,7 @@ jobs:
             docker compose up -d --build
 
       - name: Smoke test
+        if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
         run: |
           sleep 10
           curl -f https://partytracker.fun/api/ || exit 1

@@ -18,19 +18,21 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-         python-version: '3.11'
+          python-version: "3.11"
 
       - name: Check no secrets in repo
         run: |
-          if [ -f .env ]; then
-            echo ".env file found in repository!"
-            exit 1
-          fi
-          echo "No .env file found - OK"
+          for f in .env .env.local .env.production .env.staging; do
+            if [ -f "$f" ]; then
+              echo "Secret file found in repository: $f"
+              exit 1
+            fi
+          done
+          echo "No secret files found - OK"
 
       - name: Install security tools
         run: |
-          pip install bandit safety flake8
+          pip install bandit flake8 pip-audit
 
       - name: Lint (flake8)
         run: |
@@ -40,11 +42,12 @@ jobs:
         run: |
           bandit -r backend/app -ll
 
-      - name: SCA (safety)
+      - name: SCA (pip-audit)
         run: |
-          safety check -r backend/requirements.txt
+          pip-audit -r backend/requirements.txt
 
       - name: Deploy to server
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -58,6 +61,7 @@ jobs:
             docker compose restart nginx
 
       - name: Smoke test
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           sleep 10
           curl -f https://partytracker.fun/api/ || exit 1

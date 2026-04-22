@@ -1,9 +1,18 @@
+# Secrets — never commit these
 .env
-.env.dev
-node_modules/
+.env.*
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+.venv/
+
+# Node
+node_modules/
 dist/
 build/
+
+# OS
 .DS_Store
-.venv/
+Thumbs.db
