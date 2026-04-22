@@ -3,6 +3,7 @@ import {
   Users, Zap, MapPin, MoreHorizontal, UserMinus, Copy,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { User } from '../api/types'
 import CreateNightModal from '../components/CreateNightModal'
 import Sidebar from '../components/Sidebar'
@@ -65,6 +66,7 @@ export default function FriendsPage({ currentUser, onLogout }: Props) {
   const [toast, setToast] = useState('')
   const [loading, setLoading] = useState(true)
   const [showNight, setShowNight] = useState(false)
+  const navigate = useNavigate()
 
   // Simulate loading
   useEffect(() => {
@@ -260,7 +262,7 @@ export default function FriendsPage({ currentUser, onLogout }: Props) {
 
                         {/* Actions */}
                         <div className="friend-card-actions">
-                          <button className="friend-card-btn-ghost" title="Message">
+                          <button className="friend-card-btn-ghost" title="Message" onClick={() => navigate(`/messages?user=${f.handle}`)}>
                             <MessageCircle size={14} />
                           </button>
                           <button className="friend-card-btn-ghost" title="View profile">
