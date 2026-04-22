@@ -1,10 +1,20 @@
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
+
+logger = logging.getLogger(__name__)
 
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
+if SECRET_KEY == "change-me-in-production":
+    logger.warning(
+        "SECRET_KEY is using the insecure default value. "
+        "Set the SECRET_KEY environment variable before going to production."
+    )
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
@@ -18,5 +28,5 @@ def decode_token(token: str) -> Optional[int]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return int(payload["sub"])
-    except (JWTError, KeyError, ValueError):
+    except (InvalidTokenError, KeyError, ValueError):
         return None

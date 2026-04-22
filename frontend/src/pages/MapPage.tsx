@@ -73,9 +73,7 @@ export default function MapPage({ currentUser, onLogout }: Props) {
   const [selectedNight, setSelectedNight] = useState<Night | null>(null)
 
   useEffect(() => {
-    apiFetch<Night[]>('/nights/').then(data => {
-      setNights(data.filter(n => n.lat && n.lng))
-    }).catch(() => {})
+    apiFetch<Night[]>('/nights/map').then(setNights).catch(() => {})
   }, [])
 
   const filtered = nights.filter(n => {
