@@ -11,5 +11,7 @@ class User(Base):
     username = Column(String, nullable=False, unique=True, index=True)
     email = Column(String, nullable=False, unique=True, index=True)
     hashed_password = Column(String, nullable=False)
+    bio = Column(String, nullable=True)
+    location = Column(String, nullable=True)
 
     nights = relationship("Night", back_populates="user", cascade="all, delete-orphan")
