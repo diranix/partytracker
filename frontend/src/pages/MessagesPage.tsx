@@ -1,5 +1,6 @@
 import { MessageCircle, Search, Send, X, Phone, Video, MoreHorizontal } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import type { User } from '../api/types'
 import CreateNightModal from '../components/CreateNightModal'
 import Sidebar from '../components/Sidebar'
@@ -73,12 +74,37 @@ const INITIAL_CONVS: Conversation[] = [
 ]
 
 export default function MessagesPage({ currentUser, onLogout }: Props) {
+  const [searchParams] = useSearchParams()
   const [convs, setConvs] = useState<Conversation[]>(INITIAL_CONVS)
   const [activeId, setActiveId] = useState<number | null>(null)
   const [search, setSearch] = useState('')
   const [input, setInput] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Open conversation by ?user=handle from FriendsPage message button
+  useEffect(() => {
+    const handle = searchParams.get('user')
+    if (!handle) return
+    const found = convs.find(c => c.handle === handle || c.name.toLowerCase().replace(/\s+/g, '') === handle.toLowerCase())
+    if (found) {
+      setActiveId(found.id)
+      setConvs(prev => prev.map(c => c.id === found.id ? { ...c, unread: 0 } : c))
+    } else {
+      // Create a new conversation for this friend
+      const newConv: Conversation = {
+        id: Date.now(),
+        name: handle.charAt(0).toUpperCase() + handle.slice(1),
+        handle,
+        seed: handle,
+        active: true,
+        unread: 0,
+        messages: [],
+      }
+      setConvs(prev => [newConv, ...prev])
+      setActiveId(newConv.id)
+    }
+  }, [searchParams])
 
   const activeConv = convs.find(c => c.id === activeId) ?? null
 

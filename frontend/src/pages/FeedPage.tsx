@@ -93,7 +93,7 @@ export default function FeedPage({ currentUser, onLogout }: Props) {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {posts.map(p => <PostCard key={p.id} post={p} />)}
+              {posts.map(p => <PostCard key={p.id} post={p} currentUsername={currentUser.username} />)}
             </div>
           </div>
         </div>
