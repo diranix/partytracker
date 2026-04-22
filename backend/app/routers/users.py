@@ -30,9 +30,10 @@ def update_me(
             raise HTTPException(status_code=400, detail="Username already taken")
         current_user.username = data.username
     if data.bio is not None:
-        current_user.bio = data.bio
+        # Empty string clears the field
+        current_user.bio = data.bio.strip() or None
     if data.location is not None:
-        current_user.location = data.location
+        current_user.location = data.location.strip() or None
     db.commit()
     db.refresh(current_user)
     return current_user

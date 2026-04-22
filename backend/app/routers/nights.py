@@ -63,10 +63,34 @@ def _attach_meta_single(night: Night, db: Session, current_user_id: Optional[int
 
 @router.get("/", response_model=List[NightResponse])
 def get_nights(
+    skip: int = 0,
+    limit: int = 50,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_user),
 ):
-    nights = db.query(Night).order_by(Night.created_at.desc()).all()
+    nights = (
+        db.query(Night)
+        .order_by(Night.created_at.desc())
+        .offset(skip)
+        .limit(min(limit, 100))
+        .all()
+    )
+    return _attach_meta_batch(nights, db, current_user.id if current_user else None)
+
+
+@router.get("/map", response_model=List[NightResponse])
+def get_nights_with_location(
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
+    """Only return nights that have GPS coordinates (for the map page)."""
+    nights = (
+        db.query(Night)
+        .filter(Night.lat.isnot(None), Night.lng.isnot(None))
+        .order_by(Night.created_at.desc())
+        .limit(200)
+        .all()
+    )
     return _attach_meta_batch(nights, db, current_user.id if current_user else None)
 
 
@@ -135,6 +159,8 @@ def update_night(
     night.title = updated.title
     night.caption = updated.caption
     night.location = updated.location
+    night.lat = updated.lat
+    night.lng = updated.lng
     night.mood = updated.mood
     night.drinks_count = updated.drinks_count
     night.rating = updated.rating
