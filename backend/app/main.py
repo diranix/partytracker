@@ -25,6 +25,8 @@ def _run_migrations():
         "ALTER TABLE nights ADD COLUMN IF NOT EXISTS caption  VARCHAR",
         "ALTER TABLE nights ADD COLUMN IF NOT EXISTS location VARCHAR",
         "ALTER TABLE nights ADD COLUMN IF NOT EXISTS mood     VARCHAR",
+        "ALTER TABLE nights ADD COLUMN IF NOT EXISTS lat      DOUBLE PRECISION",
+        "ALTER TABLE nights ADD COLUMN IF NOT EXISTS lng      DOUBLE PRECISION",
         "ALTER TABLE users  ADD COLUMN IF NOT EXISTS bio      VARCHAR",
         "ALTER TABLE users  ADD COLUMN IF NOT EXISTS location VARCHAR",
     ]

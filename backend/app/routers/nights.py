@@ -107,6 +107,8 @@ def create_night(
         title=night.title,
         caption=night.caption,
         location=night.location,
+        lat=night.lat,
+        lng=night.lng,
         mood=night.mood,
         drinks_count=night.drinks_count,
         rating=night.rating,

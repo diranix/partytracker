@@ -8,6 +8,8 @@ class NightCreate(BaseModel):
     title: str
     caption: Optional[str] = None
     location: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     mood: Optional[str] = None
     drinks_count: int = Field(default=0, ge=0)
     rating: int = Field(default=5, ge=1, le=10)
@@ -26,6 +28,8 @@ class NightResponse(BaseModel):
     title: str
     caption: Optional[str] = None
     location: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     mood: Optional[str] = None
     drinks_count: int
     rating: int

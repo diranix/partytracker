@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
@@ -18,6 +18,8 @@ class Night(Base):
     title = Column(String, nullable=False)
     caption = Column(String, nullable=True)
     location = Column(String, nullable=True)
+    lat = Column(Float, nullable=True)
+    lng = Column(Float, nullable=True)
     mood = Column(String, nullable=True)
     drinks_count = Column(Integer, nullable=False, default=0)
     rating = Column(Integer, nullable=False, default=5)

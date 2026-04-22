@@ -1,5 +1,5 @@
-import { ArrowLeft, MapPin, Upload, X, Film } from 'lucide-react'
-import { useState, useCallback } from 'react'
+import { ArrowLeft, MapPin, Upload, X, Film, Loader2 } from 'lucide-react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { apiFetch } from '../api/client'
 import type { Night, User } from '../api/types'
 
@@ -7,6 +7,13 @@ interface Props {
   currentUser: User
   onClose: () => void
   onCreated: (post: Night) => void
+}
+
+interface LocationSuggestion {
+  display_name: string
+  lat: string
+  lon: string
+  place_id: number
 }
 
 const MOODS = ['Chill', 'Vibes', 'Intimate', 'Euphoric', 'Wild', 'Tired']
@@ -21,6 +28,11 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
   const [title, setTitle] = useState('Epic night at The Rooftop 🎉')
   const [caption, setCaption] = useState('')
   const [location, setLocation] = useState('')
+  const [locationLat, setLocationLat] = useState<number | undefined>()
+  const [locationLng, setLocationLng] = useState<number | undefined>()
+  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([])
+  const [locationSearching, setLocationSearching] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [mood, setMood] = useState('Vibes')
   const [type, setType] = useState('Party')
   const [privacy, setPrivacy] = useState('Friends')
@@ -31,6 +43,9 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
   const [error, setError] = useState('')
   const [mediaFiles, setMediaFiles] = useState<{ file: File; url: string }[]>([])
   const [dragging, setDragging] = useState(false)
+
+  const locationDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const suggestionsRef = useRef<HTMLDivElement>(null)
 
   const toggleFriend = (name: string) =>
     setTaggedFriends(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name])
@@ -57,6 +72,54 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
     addFiles(e.dataTransfer.files)
   }, [])
 
+  // Nominatim geocoding search (OpenStreetMap, no API key needed)
+  const searchLocation = (query: string) => {
+    if (locationDebounce.current) clearTimeout(locationDebounce.current)
+    if (!query.trim() || query.length < 3) {
+      setLocationSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
+    locationDebounce.current = setTimeout(async () => {
+      setLocationSearching(true)
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=0`,
+          { headers: { 'Accept-Language': 'en' } }
+        )
+        const data: LocationSuggestion[] = await res.json()
+        setLocationSuggestions(data)
+        setShowSuggestions(data.length > 0)
+      } catch {
+        setLocationSuggestions([])
+      } finally {
+        setLocationSearching(false)
+      }
+    }, 400)
+  }
+
+  const pickLocation = (s: LocationSuggestion) => {
+    // Shorten display name: "Venue Name, City, Country"
+    const parts = s.display_name.split(', ')
+    const short = parts.slice(0, 3).join(', ')
+    setLocation(short)
+    setLocationLat(parseFloat(s.lat))
+    setLocationLng(parseFloat(s.lon))
+    setShowSuggestions(false)
+    setLocationSuggestions([])
+  }
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim()) { setError('Title is required'); return }
@@ -68,6 +131,8 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
           title: title.trim(),
           caption: caption.trim() || undefined,
           location: location.trim() || undefined,
+          lat: locationLat,
+          lng: locationLng,
           mood: mood.toLowerCase(),
           drinks_count: drinks,
           rating,
@@ -106,8 +171,6 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
             {/* Upload */}
             <div>
               <div className="form-label">Photos & Videos</div>
-
-              {/* File inputs — outside the label to avoid nesting issues */}
               <input
                 id={FILE_INPUT_ID}
                 type="file"
@@ -124,8 +187,6 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
                 style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
                 onChange={e => { addFiles(e.target.files); e.target.value = '' }}
               />
-
-              {/* Drop zone — label opens file dialog natively */}
               <label
                 htmlFor={FILE_INPUT_ID}
                 className={`upload-area${dragging ? ' dragging' : ''}`}
@@ -144,7 +205,6 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
                 <div style={{ fontSize: 11, color: 'var(--muted2)' }}>JPG, PNG, GIF, MP4 · up to 6 files</div>
               </label>
 
-              {/* Thumbnails */}
               {mediaFiles.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 12 }}>
                   {mediaFiles.map((m, i) => (
@@ -200,12 +260,47 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
               <textarea className="form-textarea" placeholder="Tell the story of your night..." value={caption} onChange={e => setCaption(e.target.value)} />
             </div>
 
-            {/* Location */}
+            {/* Location with autocomplete */}
             <div>
               <div className="form-label">Location</div>
-              <div style={{ position: 'relative' }}>
-                <MapPin size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }} />
-                <input className="form-input2" style={{ paddingLeft: 32 }} placeholder="Where was this?" value={location} onChange={e => setLocation(e.target.value)} />
+              <div style={{ position: 'relative' }} ref={suggestionsRef}>
+                <MapPin size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: locationLat ? 'var(--green)' : 'var(--muted)', pointerEvents: 'none', zIndex: 1 }} />
+                <input
+                  className="form-input2"
+                  style={{ paddingLeft: 32, paddingRight: 32 }}
+                  placeholder="Search for a venue or place..."
+                  value={location}
+                  onChange={e => {
+                    setLocation(e.target.value)
+                    setLocationLat(undefined)
+                    setLocationLng(undefined)
+                    searchLocation(e.target.value)
+                  }}
+                  onFocus={() => locationSuggestions.length > 0 && setShowSuggestions(true)}
+                />
+                {locationSearching && (
+                  <Loader2 size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', animation: 'spin 1s linear infinite' }} />
+                )}
+                {locationLat && !locationSearching && (
+                  <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--green)', fontWeight: 700 }}>✓ pinned</span>
+                )}
+
+                {/* Suggestions dropdown */}
+                {showSuggestions && locationSuggestions.length > 0 && (
+                  <div className="location-suggestions">
+                    {locationSuggestions.map(s => (
+                      <button
+                        key={s.place_id}
+                        type="button"
+                        className="location-suggestion-item"
+                        onMouseDown={e => { e.preventDefault(); pickLocation(s) }}
+                      >
+                        <MapPin size={12} style={{ color: 'var(--accent2)', flexShrink: 0, marginTop: 2 }} />
+                        <span>{s.display_name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -301,6 +396,12 @@ export default function CreateNightModal({ currentUser, onClose, onCreated }: Pr
               </div>
               <div className="preview-title">{title || 'Your night title'}</div>
               {caption && <div className="preview-caption">{caption}</div>}
+              {location && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
+                  <MapPin size={10} /> {location}
+                  {locationLat && <span style={{ color: 'var(--green)', fontWeight: 600 }}>· 📍 pinned</span>}
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                 <span className="preview-badge">✦ {mood}</span>
                 <span style={{ color: 'var(--accent2)', fontSize: 13 }}>{'★'.repeat(rating)}</span>
